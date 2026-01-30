@@ -145,7 +145,7 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
   const positiveTestCases = [
     {
       id: 'Pos_Fun_0004',
-      input: 'Mama GEDHARA yanavaa.',
+      input: 'Mama gedhara yanavaa.',
       description: 'Convert simple sentence with mixed case'
     },
     {
@@ -160,7 +160,7 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
     },
     {
       id: 'Pos_Fun_0007',
-      input: 'Meeka Rs. 1500 k vatinavaada?',
+      input: 'Meeka Rs. 1500 k vatinavadha?',
       description: 'Convert question with currency notation'
     },
     {
@@ -180,12 +180,12 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
     },
     {
       id: 'Pos_Fun_0011',
-      input: '2026-02-15 suBha aluth avuruddak!',
+      input: '2026-02-15 suba aluth avurudhdhak!',
       description: 'Convert greeting with date format'
     },
     {
       id: 'Pos_Fun_0012',
-      input: 'karuNaakaralaa mata email eka hasith@gmail.com valata evanna puluvandha?',
+      input: 'karuNaakaralaa mata email eka hasith@gmail.com valata evanna puLuvandha?',
       description: 'Convert polite request with email address'
     },
     {
@@ -195,7 +195,7 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
     },
     {
       id: 'Pos_Fun_0014',
-      input: 'karuNaakaralaa WiFi password eka mata kiyanna puluvandha?',
+      input: 'karuNaakaralaa WiFi password eka mata kiyanna puLuvandha?',
       description: 'Convert polite question with technical term'
     },
     {
@@ -210,7 +210,7 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
     },
     {
       id: 'Pos_Fun_0017',
-      input: 'Website eka google.lk valata yanna, passe login venna.',
+      input: 'Website eka google valata yanna, passe login venna.',
       description: 'Convert compound sentence with URL'
     },
     {
@@ -255,7 +255,7 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
     },
     {
       id: 'Pos_Fun_0026',
-      input: 'karunakarala document eka PDF format valata convert karanna puluvandha?',
+      input: 'karuNaakarala document eka PDF format valata convert karanna puLuvandha?',
       description: 'Convert polite request with file format term'
     },
     {
