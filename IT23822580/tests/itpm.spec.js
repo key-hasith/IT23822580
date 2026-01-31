@@ -281,65 +281,56 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
     console.log(`\n[${testId}] ${description}`);
     console.log(`Input: "${inputText.substring(0, 50)}${inputText.length > 50 ? '...' : ''}"`);
 
-    try {
-      const inputField = await getInput(page);
-      
-      // Clear and fill input
-      await inputField.fill('');
-      await inputField.fill(inputText);
-      
-      // Wait for potential translation
-      const output = await waitForTranslation(page);
-      
-      console.log(`Output: "${output.substring(0, 50)}${output.length > 50 ? '...' : ''}"`);
-      
-      // Verify input was entered correctly
-      const actualInput = await inputField.inputValue();
-      expect(actualInput).toBe(inputText);
-      
-      // These assertions SHOULD FAIL - that's the point of negative testing
-      // We expect the system to behave poorly with these inputs
-      
-      switch (expectedBehavior) {
-        case 'expectEmpty':
-          // This should fail - system might produce garbled output
-          expect(output).toBe('');
-          break;
-        case 'expectNoSinhala':
-          // This should fail - system might convert incorrectly
-          expect(output).toBe(inputText);
-          break;
-        case 'expectNoSQL':
-          // This should fail - system doesn't sanitize SQL
-          expect(output).not.toContain('DROP');
-          break;
-        case 'expectNoScript':
-          // This should fail - system doesn't escape HTML/JS
-          expect(output).not.toContain('<script>');
-          break;
-        case 'expectNoHTML':
-          // This should fail - system doesn't strip HTML
-          expect(output).not.toContain('<b>');
-          break;
-        case 'expectLengthLimit':
-          // This should fail - system processes long input
-          expect(output.length).toBeLessThan(100);
-          break;
-        case 'expectOnlySinglish':
-          // This should fail - system might handle mixed scripts
-          expect(output).toMatch(/^[\u0D80-\u0DFF\s\.,!?]*$/);
-          break;
-        default:
-          // Default check: output should be empty for invalid input
-          expect(output).toBe('');
-      }
-      
-      console.log(`⚠️ ${testId} UNEXPECTEDLY PASSED - system handled edge case better than expected`);
-      return { success: true, output };
-    } catch (error) {
-      // Negative tests are EXPECTED to fail - this is good!
-      console.log(`✅ ${testId} CORRECTLY FAILED: ${error.message}`);
-      return { success: false, error: error.message };
+    const inputField = await getInput(page);
+    
+    // Clear and fill input
+    await inputField.fill('');
+    await inputField.fill(inputText);
+    
+    // Wait for potential translation
+    const output = await waitForTranslation(page);
+    
+    console.log(`Output: "${output.substring(0, 50)}${output.length > 50 ? '...' : ''}"`);
+    
+    // Verify input was entered correctly
+    const actualInput = await inputField.inputValue();
+    expect(actualInput).toBe(inputText);
+    
+    // These assertions WILL FAIL - that's the point of negative testing
+    // System should handle these edge cases but doesn't
+    
+    switch (expectedBehavior) {
+      case 'expectEmpty':
+        // This WILL FAIL - system produces output instead of empty
+        expect(output).toBe('');
+        break;
+      case 'expectNoSinhala':
+        // This WILL FAIL - system converts instead of rejecting
+        expect(output).toBe(inputText);
+        break;
+      case 'expectNoSQL':
+        // This WILL FAIL - system doesn't sanitize SQL
+        expect(output).not.toContain('DROP');
+        break;
+      case 'expectNoScript':
+        // This WILL FAIL - system doesn't escape HTML/JS
+        expect(output).not.toContain('<script>');
+        break;
+      case 'expectNoHTML':
+        // This WILL FAIL - system doesn't strip HTML
+        expect(output).not.toContain('<b>');
+        break;
+      case 'expectLengthLimit':
+        // This WILL FAIL - system processes long input without limit
+        expect(output.length).toBeLessThan(100);
+        break;
+      case 'expectOnlySinglish':
+        // This WILL FAIL - system handles mixed scripts
+        expect(output).toMatch(/^[\u0D80-\u0DFF\s\.,!?]*$/);
+        break;
+      default:
+        // Default check: output should be empty for invalid input
+        expect(output).toBe('');
     }
   }
 
@@ -354,7 +345,7 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
       id: 'Neg_Fun_0002',
       input: '123.456.789.0',
       description: 'Test with malformed numbers',
-      expectedBehavior: 'expectNoSinhala'
+      expectedBehavior: 'expectEmpty'
     },
     {
       id: 'Neg_Fun_0003',
@@ -394,13 +385,13 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
     },
     {
       id: 'Neg_Fun_0009',
-      input: 'hello 你好 नमस्ते 안녕하세요 مرحبا '.repeat(5) + ' mama gedhara yanavaa',
+      input: 'hello 你好 नमस्ते 안녕하세요 مرحبا ',
       description: 'Test with multiple language scripts',
       expectedBehavior: 'expectOnlySinglish'
     },
     {
       id: 'Neg_Fun_0010',
-      input: '01010100 01100101 01110011 01110100 '.repeat(10) + 'test data for input validation',
+      input: '01010100 01100101 01110011 01110100 '.repeat(10),
       description: 'Test with binary pattern input',
       expectedBehavior: 'expectEmpty'
     }
@@ -409,11 +400,7 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
   // Create individual tests from the test cases
   negativeTestCases.forEach(tc => {
     test(tc.id + ' - ' + tc.description, async ({ page }) => {
-      const result = await runNegativeTest(page, tc.id, tc.input, tc.description, tc.expectedBehavior);
-      
-      // For negative tests, we expect them to fail (throw assertion errors)
-      // If they pass, that means the system handled edge cases better than expected
-      // Either way, we don't fail the test here
+      await runNegativeTest(page, tc.id, tc.input, tc.description, tc.expectedBehavior);
     });
   });
 
@@ -421,8 +408,8 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
      UI TEST CASE (1 Test) - Expected: PASS
      ======================================================================== */
 
-  test('Pos_UI_0001 - Test input field functionality', async ({ page }) => {
-    console.log('\n[Pos_UI_0001] Test input field functionality');
+  test('Pos_UI_0001 - Test delete button clears input field', async ({ page }) => {
+    console.log('\n[Pos_UI_0001] Test delete button clears input field');
     
     try {
       const inputField = await getInput(page);
@@ -441,18 +428,25 @@ test.describe('Singlish → Sinhala Translator - Complete Test Suite', () => {
       const output = await getOutput(page);
       console.log(`✓ Step 2: Output generated: "${output}"`);
       
-      // For UI test, we just verify something happened
-      // Don't require specific output length
       expect(typeof output).toBe('string');
 
-      // Step 3: Clear the input field
-      await inputField.fill('');
+      // Step 3: Find and click the delete/clear button
+      const deleteButton = page.locator(
+        'button:has-text("Delete"), button:has-text("delete"), button:has-text("Clear"), button:has-text("clear"), button[aria-label*="delete" i], button[aria-label*="clear" i]'
+      ).first();
+      
+      const buttonCount = await deleteButton.count();
+      if (buttonCount === 0) {
+        throw new Error('Delete/Clear button not found on page');
+      }
+      
+      await deleteButton.click();
       await page.waitForTimeout(1000);
 
       currentValue = await inputField.inputValue();
       expect(currentValue).toBe('');
       
-      console.log('✓ Step 3: Input cleared successfully');
+      console.log('✓ Step 3: Input cleared via delete button successfully');
       console.log('✅ Pos_UI_0001 PASSED');
     } catch (error) {
       console.error('❌ Pos_UI_0001 FAILED:', error.message);
